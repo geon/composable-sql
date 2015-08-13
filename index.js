@@ -294,10 +294,14 @@ ComposableSqlQuery.prototype.fromTables = function () {
 		from = [from];
 	}
 
-	return [quoteColumn(ComposableSqlTable.cast(from[0]).name)].concat(from.slice(1).map(ComposableSqlJoin.cast).map(function (join) {
+	var baseTable = ComposableSqlTable.cast(from[0]);
+	var joins     = from.slice(1).map(ComposableSqlJoin.cast);
 
-		return join.type + ' JOIN ' + quoteColumn(join.table.name) + ' ON ' + join.onExpression;
-	}));
+	return [quoteColumn(baseTable.name)]
+		.concat(joins.map(function (join) {
+
+			return join.type + ' JOIN ' + quoteColumn(join.table.name) + ' ON ' + join.onExpression;
+		}));
 };
 
 

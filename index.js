@@ -24,15 +24,15 @@ function ComposableSqlColumn (definition) {
 
 ComposableSqlColumn.cast = function (columnish) {
 
-		if (columnish instanceof ComposableSqlColumn) {
+	if (columnish instanceof ComposableSqlColumn) {
 
-			return columnish;
-		}
+		return columnish;
+	}
 
-		if (_.isString(columnish)) {
+	if (_.isString(columnish)) {
 
-			return new ComposableSqlColumn({name: columnish});
-		}
+		return new ComposableSqlColumn({name: columnish});
+	}
 }
 
 
@@ -98,21 +98,21 @@ ComposableSqlTable.findTableByColumns = function (columns) {
 
 ComposableSqlTable.cast = function (tableish) {
 
-		if (tableish instanceof ComposableSqlTable) {
+	if (tableish instanceof ComposableSqlTable) {
 
-			return tableish;
-		}
+		return tableish;
+	}
 
-		var owner = ComposableSqlTable.findTableByColumns(tableish);
-		if (owner) {
+	var owner = ComposableSqlTable.findTableByColumns(tableish);
+	if (owner) {
 
-			return owner;
-		}
+		return owner;
+	}
 
-		// if (_.isString(tableish)) {
+	// if (_.isString(tableish)) {
 
-		// 	return new ComposableSqlTable({name: columnish});
-		// }
+	// 	return new ComposableSqlTable({name: columnish});
+	// }
 }
 
 

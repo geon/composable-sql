@@ -135,7 +135,7 @@ function ComposableSqlJoin (definition) {
 		throw new Error('Invalid table for join definition.');
 	}
 
-	this.condition = definition.condition;
+	this.onExpression = definition.condition || {compile:function(){return'fake';}};
 	this.type = (definition.type || 'INNER').toUpperCase();
 }
 
@@ -156,6 +156,37 @@ ComposableSqlJoin.cast = function (joinish) {
 	}
 };
 
+/*
+function ComposableSqlExpression (expression) {
+
+	this.expression = expression;
+}
+ComposableSqlConstant.prototype. = function () {
+
+
+ComposableSqlConstant.prototype.compile = function () {
+
+
+
+function ComposableSqlConstant (constant) {
+
+	this.value = constant;
+}
+
+
+ComposableSqlConstant.prototype.compile = function () {
+
+	if (_.isString(this.value)) {
+
+		return "'some quoted value'";
+	}
+
+	if (_.isNumber(this.value)) {
+
+		return this.value;
+	}
+};
+*/
 
 function ComposableSqlEq (a, b) {
 
@@ -167,6 +198,24 @@ function ComposableSqlEq (a, b) {
 	this.a = a;
 	this.b = b;
 }
+
+
+ComposableSqlEq.prototype.compile = function () {
+
+	// if (_.isNull(b)) {
+
+	// 	return this.a.compile() + ' IS NULL';
+	// }
+
+	// if (_.isArray(b)) {
+
+	// 	return this.a.compile() + ' IN (' + b.map(function (b2) { return b2.compile(); }).join(', ') + ')';
+	// }
+
+	// return this.a.compile() + ' = ' + this.b.compile();
+
+	return quoteColumn(ComposableSqlColumn.cast(this.a).name) + ' = ' + quoteColumn(ComposableSqlColumn.cast(this.b).name);
+};
 
 
 function ComposableSqlNot (expression) {
@@ -300,7 +349,7 @@ ComposableSqlQuery.prototype.fromTables = function () {
 	return [quoteColumn(baseTable.name)]
 		.concat(joins.map(function (join) {
 
-			return join.type + ' JOIN ' + quoteColumn(join.table.name) + ' ON ' + join.onExpression;
+			return join.type + ' JOIN ' + quoteColumn(join.table.name) + ' ON ' + join.onExpression.compile();
 		}));
 };
 

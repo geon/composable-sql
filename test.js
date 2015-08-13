@@ -11,14 +11,14 @@ var users = sql.table('users', [
 var posts = sql.table('posts', [
 	'id',
 	'content',
-	sql.column('userId', users.columns.id)
+	sql.column('userId', users.id)
 ]);
 
 
 var comments = sql.table('comments', [
 	'id',
-	sql.column('postId', posts.columns.id),
-	sql.column('userId', users.columns.id)
+	sql.column('postId', posts.id),
+	sql.column('userId', users.id)
 ]);
 
 
@@ -26,9 +26,9 @@ var query = sql.query({
 
 	// Single column, or array.
 	select: [
-		'content',  // Column by name
-		users.columns.name, // Column symbolically
-		comments    // Entire table
+		users.name, // Column symbolically
+		comments,   // Entire table
+		'content'   // Column by name
 	],
 
 	// Single expression, or array. Arrays are AND by defalut, but can be used in an OR explicitly.
@@ -60,7 +60,6 @@ var query = sql.query({
 	]
 
 });
-
 
 var result = query.compile();
 

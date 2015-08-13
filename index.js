@@ -61,6 +61,20 @@ function ComposableSqlTable (definition) {
 		return new ComposableSqlColumn(d);
 
 	}.bind(this)));
+
+	ComposableSqlTable._columnCollections.push(this.columns);
+	ComposableSqlTable._tablesMatchingColumnCollections.push(this);
+}
+
+
+ComposableSqlTable._columnCollections = [];
+ComposableSqlTable._tablesMatchingColumnCollections = [];
+
+
+ComposableSqlTable.findTableByColumns = function (columns) {
+
+	var index = this._columnCollections.indexOf(columns);
+	return this._tablesMatchingColumnCollections[index];
 }
 
 
@@ -76,7 +90,15 @@ function ComposableSqlJoin (definition) {
 		throw new Error('Missing condition for join definition.');
 	}
 
-	this.table = definition.table;
+	if (ComposableSqlTable.findTableByColumns(definition.table)) {
+
+		this.table = ComposableSqlTable.findTableByColumns(definition.table);
+
+	} else {
+
+		this.table = definition.table;
+	}
+
 	this.condition = definition.condition;
 	this.type = definition.type || 'inner';
 }
@@ -185,15 +207,14 @@ ComposableSqlQuery.prototype.selectExpresions = function () {
 			tableName  = selected.table.name;
 			columnName = selected.name;
 
-		} else if (selected instanceof ComposableSqlTable) {
-			
-			tableName  = selected.name;
+		} else if (ComposableSqlTable.findTableByColumns(selected)) {
+
+			tableName  = ComposableSqlTable.findTableByColumns(selected).name;
 
 		} else {
 
 			columnName = selected;
 		}
-
 
 		return (
 			tableName
@@ -211,7 +232,6 @@ ComposableSqlQuery.prototype.selectExpresions = function () {
 ComposableSqlQuery.prototype.fromTables = function () {
 
 	var from = this.definition.from;
-	console.log(from);
 
 	// if (typeof from != 'Array') {
 
@@ -229,10 +249,10 @@ ComposableSqlQuery.prototype.fromTables = function () {
 			tableName = table.table.name;
 			type = table.type.toUpperCase();
 
-		} else if (ComposableSqlTable) {
+		} else if (ComposableSqlTable.findTableByColumns(table)) {
 
-			tableName = table.name;
-	
+			tableName = ComposableSqlTable.findTableByColumns(table).name;
+
 		} else {
 
 			throw new Error('What to do here? Implementation incomplete.');
@@ -257,10 +277,12 @@ module.exports = {
 
 	table: function (name, columns) {
 
-		return new ComposableSqlTable({
+		var table = new ComposableSqlTable({
 			name: name,
 			columns: columns
 		});
+
+		return table.columns;
 	},
 
 

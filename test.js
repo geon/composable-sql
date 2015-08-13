@@ -45,7 +45,8 @@ var query = sql.query({
 	],
 
 	// Single table, or array.
-	from:[
+	// from: posts,
+	from: [
 		posts, // First one is always just a table.
 		users, // Uses the foreign key by default.
 		// Can be explicit.

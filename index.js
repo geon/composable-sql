@@ -289,12 +289,12 @@ ComposableSqlQuery.prototype.fromTables = function () {
 
 	var from = this.definition.from;
 
-	// if (typeof from != 'Array') {
+	if (!_.isArray(from)) {
 
-	// 	from = [this.definition.from];
-	// }
+		from = [from];
+	}
 
-	return [quoteColumn(ComposableSqlTable.cast(from[0]).name)].concat(from.map(ComposableSqlJoin.cast).map(function (join) {
+	return [quoteColumn(ComposableSqlTable.cast(from[0]).name)].concat(from.slice(1).map(ComposableSqlJoin.cast).map(function (join) {
 
 		return join.type + ' JOIN ' + quoteColumn(join.table.name) + ' ON ' + join.onExpression;
 	}));

@@ -1,0 +1,25 @@
+{
+  "name": "composable-sql",
+  "version": "0.0.1",
+  "description": "Generate SQL from a composable datastructure.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geon/composable-sql.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/geon/composable-sql/issues"
+  },
+  "homepage": "https://github.com/geon/composable-sql#readme",
+  "devDependencies": {
+    "vows": "^0.8.1"
+  },
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
+}

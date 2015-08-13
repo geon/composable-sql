@@ -136,7 +136,7 @@ function ComposableSqlJoin (definition) {
 	}
 
 	this.condition = definition.condition;
-	this.type = definition.type || 'inner';
+	this.type = (definition.type || 'INNER').toUpperCase();
 }
 
 

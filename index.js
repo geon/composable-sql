@@ -1,3 +1,7 @@
+// 'use strict';
+
+var _ = require('underscore')._;
+
 
 function quoteColumn (columnName) {
 
@@ -15,6 +19,20 @@ function ComposableSqlColumn (definition) {
 	definition.table && (this.table = definition.table);
 	this.name = definition.name;
 	definition.foreignKey && (this.foreignKey = definition.foreignKey);
+}
+
+
+ComposableSqlColumn.cast = function (columnish) {
+
+		if (columnish instanceof ComposableSqlColumn) {
+
+			return columnish;
+		}
+
+		if (_.isString(columnish)) {
+
+			return new ComposableSqlColumn({name: columnish});
+		}
 }
 
 
@@ -78,6 +96,26 @@ ComposableSqlTable.findTableByColumns = function (columns) {
 }
 
 
+ComposableSqlTable.cast = function (tableish) {
+
+		if (tableish instanceof ComposableSqlTable) {
+
+			return tableish;
+		}
+
+		var owner = ComposableSqlTable.findTableByColumns(tableish);
+		if (owner) {
+
+			return owner;
+		}
+
+		// if (_.isString(tableish)) {
+
+		// 	return new ComposableSqlTable({name: columnish});
+		// }
+}
+
+
 function ComposableSqlJoin (definition) {
 
 	if (!definition.table) {
@@ -85,23 +123,38 @@ function ComposableSqlJoin (definition) {
 		throw new Error('Missing table for join definition.');
 	}
 
-	if (!definition.condition) {
+	// if (!definition.condition) {
 
-		throw new Error('Missing condition for join definition.');
-	}
+	// 	throw new Error('Missing condition for join definition.');
+	// }
 
-	if (ComposableSqlTable.findTableByColumns(definition.table)) {
+	this.table = ComposableSqlTable.cast(definition.table);
 
-		this.table = ComposableSqlTable.findTableByColumns(definition.table);
+	if (!this.table) {
 
-	} else {
-
-		this.table = definition.table;
+		throw new Error('Invalid table for join definition.');
 	}
 
 	this.condition = definition.condition;
 	this.type = definition.type || 'inner';
 }
+
+
+ComposableSqlJoin.cast = function (joinish) {
+
+	if (joinish instanceof ComposableSqlJoin) {
+
+		return joinish;
+	}
+
+	var table = ComposableSqlTable.cast(joinish);
+	if (table) {
+
+		return new ComposableSqlJoin({
+			table: table
+		});
+	}
+};
 
 
 function ComposableSqlEq (a, b) {
@@ -201,19 +254,22 @@ ComposableSqlQuery.prototype.selectExpresions = function () {
 
 	return this.definition.select.map(function (selected) {
 
-		var tableName, columnName;
-		if (selected instanceof ComposableSqlColumn) {
+		var tableName;
+		var columnName;
 
-			tableName  = selected.table.name;
-			columnName = selected.name;
+		var column = ComposableSqlColumn.cast(selected);
+		if (column) {
 
-		} else if (ComposableSqlTable.findTableByColumns(selected)) {
-
-			tableName  = ComposableSqlTable.findTableByColumns(selected).name;
+			tableName  = column.table && column.table.name;
+			columnName = column.name;
 
 		} else {
 
-			columnName = selected;
+			var table = ComposableSqlTable.cast(selected);
+			if (table) {
+
+				tableName  = table.name;
+			}
 		}
 
 		return (
@@ -238,28 +294,9 @@ ComposableSqlQuery.prototype.fromTables = function () {
 	// 	from = [this.definition.from];
 	// }
 
-	return [from[0].name].concat(from.slice(1).map(function (table) {
+	return [ComposableSqlTable.cast(from[0]).name].concat(from.slice(1).map(ComposableSqlJoin.cast).map(function (join) {
 
-		var type = 'INNER';
-		var tableName;
-		var onExpression = 'fakefakefake';
-
-		if (table instanceof ComposableSqlJoin) {
-
-			tableName = table.table.name;
-			type = table.type.toUpperCase();
-
-		} else if (ComposableSqlTable.findTableByColumns(table)) {
-
-			tableName = ComposableSqlTable.findTableByColumns(table).name;
-
-		} else {
-
-			throw new Error('What to do here? Implementation incomplete.');
-		}
-
-		var type = 'INNER';
-		return type + ' JOIN ' + quoteColumn(tableName) + ' ON ' + onExpression;
+		return join.type + ' JOIN ' + quoteColumn(join.table.name) + ' ON ' + join.onExpression;
 	}));
 };
 

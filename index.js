@@ -235,7 +235,7 @@ ComposableSqlQuery.prototype.compile = function () {
 		sql = [
 			'SELECT ' + "\n" + this.selectExpresions().map(indent).join(",\n"),
 			'FROM ' + "\n" + this.fromTables().map(indent).join("\n")
-		].join("\n")
+		].join("\n") + ';';
 	}
 
 	return {

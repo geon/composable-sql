@@ -11,6 +11,7 @@ var users = sql.table('users', [
 var posts = sql.table('posts', [
 	'id',
 	'content',
+	'created',
 	sql.column('userId', users.id)
 ]);
 
@@ -35,7 +36,7 @@ var query = sql.query({
 	where: [
 		sql.eq(
 			sql.date(posts.created),
-			sql.date('NOW()')
+			sql.date(sql.now())
 		),
 		// sql.or takes an array. A single expression doesn't make sense.
 		sql.or([

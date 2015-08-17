@@ -1,5 +1,6 @@
 // 'use strict';
 
+var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
 var ComposableSqlColumn = require('./ComposableSqlColumn');
 var ComposableSqlEq = require('./ComposableSqlEq');
 var quoteIdentifier = require('./quote').quoteIdentifier;
@@ -151,6 +152,15 @@ function ComposableSqlOr (expressions) {
 }
 
 
+ComposableSqlOr.prototype.compile = function () {
+
+	return '(' + this.expressions.map(function (expression) {
+
+		return expression.compile();
+	}).join(' OR ') + ')';
+};
+
+
 function ComposableSqlQuery (definition) {
 
 	if (!arguments.length == 1) {
@@ -173,6 +183,23 @@ function ComposableSqlDate (expression) {
 }
 
 
+ComposableSqlDate.prototype.compile = function () {
+
+	return 'DATE(' + this.expression.compile() + ')';
+}
+
+
+function ComposableSqlNow () {
+
+}
+
+
+ComposableSqlNow.prototype.compile = function () {
+
+	return 'NOW()';
+}
+
+
 ComposableSqlQuery.prototype.compile = function () {
 
 	var sql;
@@ -192,9 +219,12 @@ ComposableSqlQuery.prototype.compile = function () {
 			return "\t" + line;
 		}
 
+		var whereExpression = this.whereExpression();
+
 		sql = [
 			'SELECT ' + "\n" + this.selectExpresions().map(indent).join(",\n"),
-			'FROM ' + "\n" + this.fromTables().map(indent).join("\n")
+			'FROM ' + "\n" + this.fromTables().map(indent).join("\n"),
+			'WHERE ' + "\n" + whereExpression.map(indent).join("\n")
 		].join("\n") + ';';
 	}
 
@@ -265,6 +295,22 @@ ComposableSqlQuery.prototype.fromTables = function () {
 };
 
 
+ComposableSqlQuery.prototype.whereExpression = function () {
+
+	var conditions = this.definition.where;
+	if (!_.isArray(conditions)) {
+
+		conditions = [conditions];
+	}
+
+	return '(' + conditions.map(function (condition) {
+
+		return ComposableSqlExpression.cast(condition).compile();
+
+	}).join(' AND ') + ')';
+};
+
+
 module.exports = {
 
 	column: function (name, foreignKey) {
@@ -318,6 +364,12 @@ module.exports = {
 	date: function (expression) {
 
 		return new ComposableSqlDate(expression);		
+	},
+
+
+	now: function () {
+
+		return new ComposableSqlNow();
 	},
 
 

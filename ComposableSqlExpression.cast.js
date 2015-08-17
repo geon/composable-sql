@@ -7,7 +7,7 @@ var _ = require('underscore')._;
 
 
 ComposableSqlExpression.cast = function (expressionish) {
-
+console.log(expressionish);
 	if (_.isString(expressionish) || _.isNumber(expressionish) || _.isArray(expressionish)) {
 
 		return new ComposableSqlConstant(expressionish);

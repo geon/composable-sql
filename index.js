@@ -3,6 +3,7 @@
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
 var ComposableSqlColumn = require('./ComposableSqlColumn');
 var ComposableSqlEq = require('./ComposableSqlEq');
+var ComposableSqlFunctionCall = require('./ComposableSqlFunctionCall');
 var quoteIdentifier = require('./quote').quoteIdentifier;
 
 var _ = require('underscore')._;
@@ -172,34 +173,6 @@ function ComposableSqlQuery (definition) {
 }
 
 
-function ComposableSqlDate (expression) {
-
-	if (!arguments.length == 1) {
-
-		throw new Error('Date needs 1 argument.');
-	}
-
-	this.expression = expression;
-}
-
-
-ComposableSqlDate.prototype.compile = function () {
-
-	return 'DATE(' + this.expression.compile() + ')';
-}
-
-
-function ComposableSqlNow () {
-
-}
-
-
-ComposableSqlNow.prototype.compile = function () {
-
-	return 'NOW()';
-}
-
-
 ComposableSqlQuery.prototype.compile = function () {
 
 	var sql;
@@ -361,15 +334,15 @@ module.exports = {
 	},
 
 
-	date: function (expression) {
+	date: function (foo) {
 
-		return new ComposableSqlDate(expression);		
+		return new ComposableSqlFunctionCall('DATE', arguments);
 	},
 
 
 	now: function () {
 
-		return new ComposableSqlNow();
+		return new ComposableSqlFunctionCall('NOW', []);
 	},
 
 

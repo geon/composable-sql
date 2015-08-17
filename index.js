@@ -128,38 +128,6 @@ ComposableSqlJoin.cast = function (joinish) {
 	}
 };
 
-/*
-function ComposableSqlExpression (expression) {
-
-	this.expression = expression;
-}
-ComposableSqlConstant.prototype. = function () {
-
-
-ComposableSqlConstant.prototype.compile = function () {
-
-
-
-function ComposableSqlConstant (constant) {
-
-	this.value = constant;
-}
-
-
-ComposableSqlConstant.prototype.compile = function () {
-
-	if (_.isString(this.value)) {
-
-		return "'some quoted value'";
-	}
-
-	if (_.isNumber(this.value)) {
-
-		return this.value;
-	}
-};
-*/
-
 
 function ComposableSqlNot (expression) {
 

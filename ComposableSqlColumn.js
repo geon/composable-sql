@@ -35,3 +35,9 @@ ComposableSqlColumn.cast = function (columnish) {
 		return new ComposableSqlColumn({name: columnish});
 	}
 };
+
+
+ComposableSqlColumn.prototype.compile = function () {
+
+	return this.table && quoteIdentifier(this.table.name) + '.' + quoteIdentifier(this.name)
+};

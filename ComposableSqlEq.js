@@ -35,7 +35,7 @@ ComposableSqlEq.prototype.compile = function () {
 	// return this.a.compile() + ' = ' + this.b.compile();
 
 	return (
-		quoteIdentifier(ComposableSqlColumn.cast(this.a).name) + ' = ' +
-		quoteIdentifier(ComposableSqlColumn.cast(this.b).name)
+		ComposableSqlColumn.cast(this.a).compile() + ' = ' +
+		ComposableSqlColumn.cast(this.b).compile()
 	);
 };

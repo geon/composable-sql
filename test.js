@@ -49,12 +49,8 @@ vows.describe('composable-sql')
 				return eq.compile();
 			},
 
-			'the mapped function should be applied to all elements in the array': function (topic) {
-
-				// WRONG
-				assert(topic == '"postId" = "id"');
-
-				// assert(topic == '"comments".postId" = "posts".id"');
+			'should compile to fully qualified column names': function (topic) {
+				assert(topic == '"comments"."postId" = "posts"."id"');
 			}
 		}
 	})

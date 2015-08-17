@@ -1,39 +1,11 @@
 // 'use strict';
 
+var ComposableSqlColumn = require('./ComposableSqlColumn');
+var ComposableSqlEq = require('./ComposableSqlEq');
+var quoteIdentifier = require('./quote').quoteIdentifier;
+
 var _ = require('underscore')._;
 
-
-function quoteColumn (columnName) {
-
-	return '"'+columnName.replace(/"/g, '\\"')+'"';
-}
-
-
-function ComposableSqlColumn (definition) {
-
-	if (!definition.name) {
-
-		throw new Error('Missing name for column definition.');
-	}
-
-	definition.table && (this.table = definition.table);
-	this.name = definition.name;
-	definition.foreignKey && (this.foreignKey = definition.foreignKey);
-}
-
-
-ComposableSqlColumn.cast = function (columnish) {
-
-	if (columnish instanceof ComposableSqlColumn) {
-
-		return columnish;
-	}
-
-	if (_.isString(columnish)) {
-
-		return new ComposableSqlColumn({name: columnish});
-	}
-}
 
 
 function ComposableSqlTable (definition) {
@@ -188,35 +160,6 @@ ComposableSqlConstant.prototype.compile = function () {
 };
 */
 
-function ComposableSqlEq (a, b) {
-
-	if (!arguments.length == 2) {
-
-		throw new Error('Eq needs 2 arguments.');
-	}
-
-	this.a = a;
-	this.b = b;
-}
-
-
-ComposableSqlEq.prototype.compile = function () {
-
-	// if (_.isNull(b)) {
-
-	// 	return this.a.compile() + ' IS NULL';
-	// }
-
-	// if (_.isArray(b)) {
-
-	// 	return this.a.compile() + ' IN (' + b.map(function (b2) { return b2.compile(); }).join(', ') + ')';
-	// }
-
-	// return this.a.compile() + ' = ' + this.b.compile();
-
-	return quoteColumn(ComposableSqlColumn.cast(this.a).name) + ' = ' + quoteColumn(ComposableSqlColumn.cast(this.b).name);
-};
-
 
 function ComposableSqlNot (expression) {
 
@@ -323,11 +266,11 @@ ComposableSqlQuery.prototype.selectExpresions = function () {
 
 		return (
 			tableName
-				? quoteColumn(tableName)+'.'
+				? quoteIdentifier(tableName)+'.'
 				: ''
 		) + (
 			columnName
-				? quoteColumn(columnName)
+				? quoteIdentifier(columnName)
 				: '*'
 		);
 	});
@@ -346,10 +289,10 @@ ComposableSqlQuery.prototype.fromTables = function () {
 	var baseTable = ComposableSqlTable.cast(from[0]);
 	var joins     = from.slice(1).map(ComposableSqlJoin.cast);
 
-	return [quoteColumn(baseTable.name)]
+	return [quoteIdentifier(baseTable.name)]
 		.concat(joins.map(function (join) {
 
-			return join.type + ' JOIN ' + quoteColumn(join.table.name) + ' ON ' + join.onExpression.compile();
+			return join.type + ' JOIN ' + quoteIdentifier(join.table.name) + ' ON ' + join.onExpression.compile();
 		}));
 };
 

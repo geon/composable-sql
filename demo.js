@@ -26,9 +26,9 @@ var query = sql.query({
 
 	// Single column, or array.
 	select: [
-		users.name, // Column symbolically
-		comments,   // Entire table
-		'content'   // Column by name
+		users.name,           // Column symbolically
+		comments,             // Entire table
+		sql.column('content') // Column by name
 	],
 
 	// Single expression, or array. Arrays are AND by defalut, but can be used in an OR explicitly.

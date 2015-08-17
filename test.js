@@ -5,6 +5,7 @@ var vows = require('vows');
 
 var sql = require('./index');
 var ComposableSqlEq = require('./ComposableSqlEq');
+var ComposableSqlConstant = require('./ComposableSqlConstant');
 
 
 var users = sql.table('users', [
@@ -38,7 +39,7 @@ function assert (condition) {
 
 vows.describe('composable-sql')
 	.addBatch({
-		'eq': {
+		'ComposableSqlEq': {
 			topic: function () {
 
 				var eq = new ComposableSqlEq(
@@ -51,6 +52,56 @@ vows.describe('composable-sql')
 
 			'should compile to fully qualified column names': function (topic) {
 				assert(topic == '"comments"."postId" = "posts"."id"');
+			}
+		}
+	})
+	.addBatch({
+		'ComposableSqlConstant string': {
+			topic: function () {
+
+				var c = new ComposableSqlConstant('foo');
+
+				return c.compile();
+			},
+
+			'should compile to quoted string': function (topic) {
+				assert(topic == '\'foo\'');
+			}
+		},
+		'ComposableSqlConstant number': {
+			topic: function () {
+
+				var c = new ComposableSqlConstant(123);
+
+				return c.compile();
+			},
+
+			'should compile to number': function (topic) {
+				assert(topic == '123');
+			}
+		},
+		'ComposableSqlConstant null': {
+			topic: function () {
+
+				var c = new ComposableSqlConstant(null);
+
+				return c.compile();
+			},
+
+			'should compile to number': function (topic) {
+				assert(topic == 'NULL');
+			}
+		},
+		'ComposableSqlConstant array': {
+			topic: function () {
+
+				var c = new ComposableSqlConstant([123, 42, 1337]);
+
+				return c.compile();
+			},
+
+			'should compile to "list"': function (topic) {
+				assert(topic == '(123, 42, 1337)');
 			}
 		}
 	})

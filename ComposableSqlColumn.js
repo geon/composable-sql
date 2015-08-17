@@ -1,6 +1,7 @@
 
 'use strict';
 
+var ComposableSqlExpression = require('./ComposableSqlExpression');
 var quoteIdentifier = require('./quote').quoteIdentifier;
 
 var _ = require('underscore')._;
@@ -21,6 +22,9 @@ function ComposableSqlColumn (definition) {
 	this.name = definition.name;
 	definition.foreignKey && (this.foreignKey = definition.foreignKey);
 }
+
+
+ComposableSqlColumn.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 
 ComposableSqlColumn.cast = function (columnish) {

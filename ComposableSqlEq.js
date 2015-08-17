@@ -1,8 +1,12 @@
 
 'use strict';
 
+var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
+var ComposableSqlConstant = require('./ComposableSqlConstant');
 var ComposableSqlColumn = require('./ComposableSqlColumn');
 var quoteIdentifier = require('./quote').quoteIdentifier;
+
+var _ = require('underscore')._;
 
 
 module.exports = ComposableSqlEq;
@@ -15,27 +19,31 @@ function ComposableSqlEq (a, b) {
 		throw new Error('Eq needs 2 arguments.');
 	}
 
-	this.a = a;
-	this.b = b;
+	this.a = ComposableSqlExpression.cast(a);
+	this.b = ComposableSqlExpression.cast(b);
 }
+
+
+ComposableSqlEq.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 
 ComposableSqlEq.prototype.compile = function () {
 
-	// if (_.isNull(b)) {
+	var aCompiled = this.a.compile();
+	var bCompiled = this.b.compile();
 
-	// 	return this.a.compile() + ' IS NULL';
-	// }
+	if (bCompiled == 'NULL') {
 
-	// if (_.isArray(b)) {
+		return aCompiled + ' IS NULL';
+	}
 
-	// 	return this.a.compile() + ' IN (' + b.map(function (b2) { return b2.compile(); }).join(', ') + ')';
-	// }
+	if (this.b instanceof ComposableSqlConstant && _.isArray(this.b.value)) {
 
-	// return this.a.compile() + ' = ' + this.b.compile();
+		return aCompiled + ' IN ' + bCompiled;
+	}
 
 	return (
-		ComposableSqlColumn.cast(this.a).compile() + ' = ' +
-		ComposableSqlColumn.cast(this.b).compile()
+		aCompiled + ' = ' +
+		bCompiled
 	);
 };

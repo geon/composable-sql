@@ -1,5 +1,10 @@
+'use strict';
 
-var sql = require('./index.js');
+
+var vows = require('vows');
+
+var sql = require('./index');
+var ComposableSqlEq = require('./ComposableSqlEq');
 
 
 var users = sql.table('users', [
@@ -22,47 +27,35 @@ var comments = sql.table('comments', [
 ]);
 
 
-var query = sql.query({
+function assert (condition) {
 
-	// Single column, or array.
-	select: [
-		users.name, // Column symbolically
-		comments,   // Entire table
-		'content'   // Column by name
-	],
+	if (!condition) {
 
-	// Single expression, or array. Arrays are AND by defalut, but can be used in an OR explicitly.
-	where: [
-		sql.eq(
-			sql.date(posts.created),
-			sql.date('NOW()')
-		),
-		// sql.or takes an array. A single expression doesn't make sense.
-		sql.or([
-			sql.not(posts.isPublished),
-			posts.isDeleted
-		])
-	],
+		throw new Error();
+	}
+}
 
-	// Single table, or array.
-	// from: posts,
-	from: [
-		posts, // First one is always just a table.
-		users, // Uses the foreign key by default.
-		// Can be explicit.
-		sql.join(
-			comments,
-			sql.eq(
-				comments.postId,
-				posts.id
-			),
-			'left'
-		)
-	]
 
-});
+vows.describe('composable-sql')
+	.addBatch({
+		'eq': {
+			topic: function () {
 
-var result = query.compile();
+				var eq = new ComposableSqlEq(
+					comments.postId,
+					posts.id
+				);
 
-console.log(result.text);
-console.log(result.parameters);
+				return eq.compile();
+			},
+
+			'the mapped function should be applied to all elements in the array': function (topic) {
+
+				// WRONG
+				assert(topic == '"postId" = "id"');
+
+				// assert(topic == '"comments".postId" = "posts".id"');
+			}
+		}
+	})
+	.run();

@@ -10,7 +10,9 @@ module.exports = ComposableSqlFunctionCall;
 function ComposableSqlFunctionCall (functionName, args) {
 
 	this.functionName = functionName;
-	this.args = Array.prototype.map.apply(args, [ComposableSqlExpression.cast]);
+	this.args = args
+		? Array.prototype.map.apply(args, [ComposableSqlExpression.cast])
+		: [];
 }
 
 

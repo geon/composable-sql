@@ -17,7 +17,7 @@ function ComposableSqlConstant (value) {
 }
 
 
-ComposableSqlConstant.prototype = ComposableSqlExpression;
+ComposableSqlConstant.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 
 ComposableSqlConstant.cast = function (constantish) {

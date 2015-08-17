@@ -12,6 +12,8 @@ var posts = sql.table('posts', [
 	'id',
 	'content',
 	'created',
+	'isPublished',
+	'isDeleted',
 	sql.column('userId', users.id)
 ]);
 

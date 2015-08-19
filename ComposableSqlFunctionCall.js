@@ -21,9 +21,9 @@ ComposableSqlFunctionCall.prototype.__proto__ = ComposableSqlExpression.prototyp
 
 ComposableSqlFunctionCall.prototype.compile = function () {
 
-	return this.functionName + '(' + this.args.map(function (expression) {
+	return [this.functionName + '(' + this.args.map(function (expression) {
 
 		return expression.compile();
 
-	}).join(', ') + ')';
+	}).join(', ') + ')'];
 };

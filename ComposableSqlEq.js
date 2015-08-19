@@ -29,21 +29,24 @@ ComposableSqlEq.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 ComposableSqlEq.prototype.compile = function () {
 
-	var aCompiled = this.a.compile();
-	var bCompiled = this.b.compile();
+	var aCompiledLines = this.a.compile();
+	var bCompiledLines = this.b.compile();
 
-	if (bCompiled == 'NULL') {
+	var operator = ' = ';
 
-		return aCompiled + ' IS NULL';
+	if (this.b instanceof ComposableSqlConstant) {
+
+		if (_.isNull(this.b.value)) {
+
+			operator = ' IS ';
+		}
+
+		if (_.isArray(this.b.value)) {
+
+			operator = ' IN ';
+		}
 	}
 
-	if (this.b instanceof ComposableSqlConstant && _.isArray(this.b.value)) {
-
-		return aCompiled + ' IN ' + bCompiled;
-	}
-
-	return (
-		aCompiled + ' = ' +
-		bCompiled
-	);
+	var joiningLine = aCompiledLines.pop() + operator + bCompiledLines.pop();
+	return aCompiledLines.concat([joiningLine], bCompiledLines);
 };

@@ -55,14 +55,15 @@ ComposableSqlConstant.prototype.compile = function () {
 
 	if (_.isArray(this.value)) {
 
-		return (
-			'(' +
+		return ['('].concat(
 			this.value
 				.map(quoteConstant)
-				.join(', ') +
-			')'
-		);
+				.map(function (line, index, arr) {
+
+					return line + (index < arr.length-1 ? ',' : '');
+				})
+		[')']);
 	}
 
-	return quoteConstant(this.value);
+	return [quoteConstant(this.value)];
 };

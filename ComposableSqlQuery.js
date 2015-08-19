@@ -6,6 +6,7 @@ var ComposableSqlColumn = require('./ComposableSqlColumn');
 var ComposableSqlTable = require('./ComposableSqlTable');
 var ComposableSqlJoin = require('./ComposableSqlJoin');
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
+var ComposableSqlAnd = require('./ComposableSqlAnd');
 var quoteIdentifier = require('./quote').quoteIdentifier;
 
 var _ = require('underscore')._;
@@ -45,8 +46,8 @@ ComposableSqlQuery.prototype.compile = function () {
 	} else {
 
 		sql = [
-			'SELECT ' + "\n" + this.selectExpresions().map(indent).join(",\n"),
-			'FROM ' + "\n" + this.fromTables().map(indent).join("\n"),
+			'SELECT ' + "\n" + this.selectExpresionLines().map(indent).join(",\n"),
+			'FROM ' + "\n" + this.fromLines().map(indent).join("\n"),
 			'WHERE ' + "\n" + this.whereLines().map(indent).join("\n")
 		].join("\n") + ';';
 	}
@@ -58,7 +59,7 @@ ComposableSqlQuery.prototype.compile = function () {
 };
 
 
-ComposableSqlQuery.prototype.selectExpresions = function () {
+ComposableSqlQuery.prototype.selectExpresionLines = function () {
 
 	if (this.definition.select == '*') {
 
@@ -98,7 +99,7 @@ ComposableSqlQuery.prototype.selectExpresions = function () {
 }
 
 
-ComposableSqlQuery.prototype.fromTables = function () {
+ComposableSqlQuery.prototype.fromLines = function () {
 
 	var from = this.definition.from;
 
@@ -123,13 +124,8 @@ ComposableSqlQuery.prototype.whereLines = function () {
 	var conditions = this.definition.where;
 	if (!_.isArray(conditions)) {
 
-		conditions = [conditions];
+		return conditions.compile();
 	}
 
-	return conditions.map(function (condition, index) {
-
-		return (index
-			? 'AND '
-			: '') + ComposableSqlExpression.cast(condition).compile();
-	});
+	return new ComposableSqlAnd(conditions).compile();
 };

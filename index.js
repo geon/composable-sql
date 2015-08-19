@@ -6,6 +6,7 @@ var ComposableSqlJoin = require('./ComposableSqlJoin');
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
 var ComposableSqlColumn = require('./ComposableSqlColumn');
 var ComposableSqlEq = require('./ComposableSqlEq');
+var ComposableSqlAnd = require('./ComposableSqlAnd');
 var ComposableSqlOr = require('./ComposableSqlOr');
 var ComposableSqlFunctionCall = require('./ComposableSqlFunctionCall');
 
@@ -53,6 +54,12 @@ module.exports = {
 	not: function (expression) {
 
 		return new ComposableSqlFunctionCall('NOT', arguments);
+	},
+
+
+	and: function (expressions) {
+
+		return new ComposableSqlAnd(expressions);		
 	},
 
 

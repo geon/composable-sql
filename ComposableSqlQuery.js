@@ -8,6 +8,7 @@ var ComposableSqlJoin = require('./ComposableSqlJoin');
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
 var ComposableSqlAnd = require('./ComposableSqlAnd');
 var quoteIdentifier = require('./quote').quoteIdentifier;
+var indent = require('./indent');
 
 var _ = require('underscore')._;
 
@@ -27,11 +28,6 @@ function ComposableSqlQuery (definition) {
 
 
 ComposableSqlQuery.prototype.compile = function () {
-
-	function indent (line) {
-
-		return "\t" + line;
-	}
 
 	var sql;
 

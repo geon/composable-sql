@@ -2,6 +2,7 @@
 'use strict';
 
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
+var indent = require('./indent').indent;
 
 
 module.exports = ComposableSqlFunctionCall;
@@ -19,11 +20,11 @@ function ComposableSqlFunctionCall (functionName, args) {
 ComposableSqlFunctionCall.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 
-ComposableSqlFunctionCall.prototype.compile = function () {
+ComposableSqlFunctionCall.prototype.compile = function (indentationLevel) {
 
-	return [this.functionName + '(' + this.args.map(function (expression) {
+	return indent(indentationLevel, this.functionName) + '(' + this.args.map(function (expression) {
 
-		return expression.compile();
+		return expression.compile(0);
 
-	}).join(', ') + ')'];
+	}).join(', ') + ')';
 };

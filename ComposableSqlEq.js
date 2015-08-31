@@ -5,6 +5,7 @@ var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./C
 var ComposableSqlConstant = require('./ComposableSqlConstant');
 var ComposableSqlColumn = require('./ComposableSqlColumn');
 var quoteIdentifier = require('./quote').quoteIdentifier;
+var indent = require('./indent').indent;
 
 var _ = require('underscore')._;
 
@@ -27,10 +28,10 @@ function ComposableSqlEq (a, b) {
 ComposableSqlEq.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 
-ComposableSqlEq.prototype.compile = function () {
+ComposableSqlEq.prototype.compile = function (indentationLevel) {
 
-	var aCompiledLines = this.a.compile();
-	var bCompiledLines = this.b.compile();
+	var aCompiledLines = this.a.compile(0);
+	var bCompiledLines = this.b.compile(0);
 
 	var operator = ' = ';
 
@@ -47,6 +48,5 @@ ComposableSqlEq.prototype.compile = function () {
 		}
 	}
 
-	var joiningLine = aCompiledLines.pop() + operator + bCompiledLines.pop();
-	return aCompiledLines.concat([joiningLine], bCompiledLines);
+	return indent(indentationLevel, aCompiledLines + operator + bCompiledLines);
 };

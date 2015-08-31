@@ -3,7 +3,8 @@
 
 
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
-var indent = require('./indent');
+var makeIndenter = require('./indent').makeIndenter;
+var indent = require('./indent').indent;
 
 
 module.exports = ComposableSqlAnd;
@@ -35,13 +36,11 @@ function ComposableSqlAnd (expressions) {
 ComposableSqlAnd.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 
-ComposableSqlAnd.prototype.compile = function () {
+ComposableSqlAnd.prototype.compile = function (indentationLevel) {
 
-	return ['('].concat(this.expressions.map(function (expression, index, arr) {
+	return indent(indentationLevel, '(' + "\n" + this.expressions.map(function (expression) {
 
-		var compiled = expression.compile();
-		compiled.push(compiled.pop() + (index < arr.length-1 ? ' AND' : ''));
-		return compiled;
-
-	}).reduce(function (soFar, next) { return soFar.concat(next);}, []).map(indent), [')']);
+		return expression.compile(indentationLevel + 1);
+	})
+		.join(' AND'+ "\n") + "\n" + ')');
 };

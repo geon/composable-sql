@@ -8,7 +8,8 @@ var ComposableSqlJoin = require('./ComposableSqlJoin');
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
 var ComposableSqlAnd = require('./ComposableSqlAnd');
 var quoteIdentifier = require('./quote').quoteIdentifier;
-var indent = require('./indent');
+var makeIndenter = require('./indent').makeIndenter;
+var indent = require('./indent').indent;
 
 var _ = require('underscore')._;
 
@@ -42,9 +43,9 @@ ComposableSqlQuery.prototype.compile = function () {
 	} else {
 
 		sql = [
-			'SELECT ' + "\n" + this.selectExpresionLines().map(indent).join(",\n"),
-			'FROM ' + "\n" + this.fromLines().map(indent).join("\n"),
-			'WHERE ' + "\n" + this.whereLines().map(indent).join("\n")
+			'SELECT ' + "\n" + this.selectExpressionList(1),
+			'FROM ' + "\n" + this.fromTables(1),
+			'WHERE ' + "\n" + this.whereExpression(1)
 		].join("\n") + ';';
 	}
 
@@ -55,47 +56,46 @@ ComposableSqlQuery.prototype.compile = function () {
 };
 
 
-ComposableSqlQuery.prototype.selectExpresionLines = function () {
+ComposableSqlQuery.prototype.selectExpressionList = function (indentationLevel) {
 
-	if (this.definition.select == '*') {
+	return this.definition.select == '*'
+		? ['*']
+		: this.definition.select.map(function (selected) {
 
-		return ['*'];
-	}
+			var tableName;
+			var columnName;
 
-	return this.definition.select.map(function (selected) {
+			var column = ComposableSqlColumn.cast(selected);
+			if (column) {
 
-		var tableName;
-		var columnName;
+				tableName  = column.table && column.table.name;
+				columnName = column.name;
 
-		var column = ComposableSqlColumn.cast(selected);
-		if (column) {
+			} else {
 
-			tableName  = column.table && column.table.name;
-			columnName = column.name;
+				var table = ComposableSqlTable.cast(selected);
+				if (table) {
 
-		} else {
-
-			var table = ComposableSqlTable.cast(selected);
-			if (table) {
-
-				tableName  = table.name;
+					tableName  = table.name;
+				}
 			}
-		}
 
-		return (
-			tableName
-				? quoteIdentifier(tableName)+'.'
-				: ''
-		) + (
-			columnName
-				? quoteIdentifier(columnName)
-				: '*'
-		);
-	});
+			return (
+				tableName
+					? quoteIdentifier(tableName)+'.'
+					: ''
+			) + (
+				columnName
+					? quoteIdentifier(columnName)
+					: '*'
+			);
+		})
+			.map(makeIndenter(indentationLevel))
+			.join("\n");
 }
 
 
-ComposableSqlQuery.prototype.fromLines = function () {
+ComposableSqlQuery.prototype.fromTables = function (indentationLevel) {
 
 	var from = this.definition.from;
 
@@ -110,18 +110,25 @@ ComposableSqlQuery.prototype.fromLines = function () {
 	return [quoteIdentifier(baseTable.name)]
 		.concat(joins.map(function (join) {
 
-			return join.type + ' JOIN ' + quoteIdentifier(join.table.name) + ' ON ' + join.onExpression.compile();
-		}));
+			return (
+				join.type + ' JOIN ' + quoteIdentifier(join.table.name) +
+				' ON ' + join.onExpression.compile(0)
+			);
+		}))
+		.map(makeIndenter(indentationLevel))
+		.join("\n");
 };
 
 
-ComposableSqlQuery.prototype.whereLines = function () {
+ComposableSqlQuery.prototype.whereExpression = function (indentationLevel) {
 
 	var conditions = this.definition.where;
-	if (!_.isArray(conditions)) {
 
-		return conditions.compile();
+	// Optionally accept an array to be AND:ed instead of a single expression.
+	if (_.isArray(conditions)) {
+
+		conditions = new ComposableSqlAnd(conditions);
 	}
 
-	return new ComposableSqlAnd(conditions).compile();
+	return conditions.compile(indentationLevel);
 };

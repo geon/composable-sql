@@ -1,7 +1,29 @@
 
 'use strict';
 
-module.exports = function (line) {
+module.exports = {
+	makeIndenter: makeIndenter,
+	indent: indent
+};
 
-	return "\t" + line;
+
+function makeIndenter (indentationLevel) {
+
+	var indentation = '';
+
+	for (var i = 0; i < indentationLevel; i++) {
+
+		indentation += "\t";
+	}
+
+	return function (line) {
+
+		return indentation + line;
+	};
+}
+
+
+function indent (indentationLevel, line) {
+
+	return makeIndenter(indentationLevel)(line);
 }

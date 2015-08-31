@@ -12,7 +12,7 @@ function makeIndenter (indentationLevel) {
 	var indentation = '';
 
 	for (var i = 0; i < indentationLevel; i++) {
-
+	
 		indentation += "\t";
 	}
 

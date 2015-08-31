@@ -4,6 +4,8 @@
 
 var ComposableSqlExpression = require('./ComposableSqlExpression');
 var quoteString = require('./quote').quoteString;
+var makeIndenter = require('./indent').makeIndenter;
+var indent = require('./indent').indent;
 
 var _ = require('underscore')._;
 
@@ -31,7 +33,7 @@ ComposableSqlConstant.cast = function (constantish) {
 };
 
 
-ComposableSqlConstant.prototype.compile = function () {
+ComposableSqlConstant.prototype.compile = function (indentationLevel) {
 
 	function quoteConstant (value) {
 
@@ -55,15 +57,13 @@ ComposableSqlConstant.prototype.compile = function () {
 
 	if (_.isArray(this.value)) {
 
-		return ['('].concat(
+		return '('+
 			this.value
 				.map(quoteConstant)
-				.map(function (line, index, arr) {
-
-					return line + (index < arr.length-1 ? ',' : '');
-				})
-		[')']);
+				.map(makeIndenter(indentationLevel + 1))
+				.join(",\n") +
+			indent(indentationLevel, ')');
 	}
 
-	return [quoteConstant(this.value)];
+	return quoteConstant(this.value);
 };

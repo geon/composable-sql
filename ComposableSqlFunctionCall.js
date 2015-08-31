@@ -22,9 +22,14 @@ ComposableSqlFunctionCall.prototype.__proto__ = ComposableSqlExpression.prototyp
 
 ComposableSqlFunctionCall.prototype.compile = function (indentationLevel) {
 
-	return indent(indentationLevel, this.functionName) + '(' + this.args.map(function (expression) {
+	return (
+		this.functionName + '(' +
+		this.args
+			.map(function (expression) {
 
-		return expression.compile(0);
-
-	}).join(', ') + ')';
+				return expression.compile(indentationLevel + 1);
+			})
+			.join(', ') +
+		')'
+	);
 };

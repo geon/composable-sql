@@ -43,5 +43,5 @@ ComposableSqlColumn.cast = function (columnish) {
 
 ComposableSqlColumn.prototype.compile = function () {
 
-	return [this.table && quoteIdentifier(this.table.name) + '.' + quoteIdentifier(this.name)];
+	return this.table && quoteIdentifier(this.table.name) + '.' + quoteIdentifier(this.name);
 };

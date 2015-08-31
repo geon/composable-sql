@@ -30,8 +30,8 @@ ComposableSqlEq.prototype.__proto__ = ComposableSqlExpression.prototype;
 
 ComposableSqlEq.prototype.compile = function (indentationLevel) {
 
-	var aCompiledLines = this.a.compile(0);
-	var bCompiledLines = this.b.compile(0);
+	var aCompiledLines = this.a.compile(indentationLevel + 1);
+	var bCompiledLines = this.b.compile(indentationLevel + 1);
 
 	var operator = ' = ';
 
@@ -48,5 +48,5 @@ ComposableSqlEq.prototype.compile = function (indentationLevel) {
 		}
 	}
 
-	return indent(indentationLevel, aCompiledLines + operator + bCompiledLines);
+	return aCompiledLines + operator + bCompiledLines;
 };

@@ -45,7 +45,7 @@ ComposableSqlQuery.prototype.compile = function () {
 		sql = [
 			'SELECT ' + "\n" + this.selectExpressionList(1),
 			'FROM ' + "\n" + this.fromTables(1),
-			'WHERE ' + "\n" + this.whereExpression(1)
+			'WHERE ' + "\n" + indent(1, this.whereExpression(1))
 		].join("\n") + ';';
 	}
 

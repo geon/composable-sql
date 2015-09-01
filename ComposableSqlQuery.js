@@ -17,7 +17,9 @@ function ComposableSqlQuery (definition) {
 		throw new Error('Query needs 1 argument.');
 	}
 
-	this.definition = definition;
+	this.selectClause = new ComposableSqlSelectClause(definition.select);
+	this.  fromClause = new ComposableSqlFromClause  (definition.from  );
+	this. whereClause = new ComposableSqlWhereClause (definition.where );
 }
 
 
@@ -25,24 +27,20 @@ ComposableSqlQuery.prototype.compile = function () {
 
 	var sql;
 
-	if (this.definition.delete) {
+	if (this.delete) {
 
 		throw new Error('Not implemented.');
 
-	} else if (this.definition.update) {
+	} else if (this.update) {
 
 		throw new Error('Not implemented.');
 
 	} else {
 
-		var selectClause = new ComposableSqlSelectClause(this.definition.select);
-		var   fromClause = new ComposableSqlFromClause  (this.definition.from  );
-		var  whereClause = new ComposableSqlWhereClause (this.definition.where );
-
 		sql = [
-			selectClause.compile(0),
-			  fromClause.compile(0),
-			 whereClause.compile(0)
+			this.selectClause.compile(0),
+			this.  fromClause.compile(0),
+			this. whereClause.compile(0)
 		].join("\n") + ';';
 	}
 

@@ -2,17 +2,9 @@
 'use strict';
 
 
-var ComposableSqlColumn = require('./ComposableSqlColumn');
-var ComposableSqlTable = require('./ComposableSqlTable');
-var ComposableSqlJoin = require('./ComposableSqlJoin');
-var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
-var ComposableSqlWhereClause = require('./ComposableSqlWhereClause');
+var ComposableSqlSelectClause = require('./ComposableSqlSelectClause');
 var ComposableSqlFromClause = require('./ComposableSqlFromClause');
-var quoteIdentifier = require('./quote').quoteIdentifier;
-var makeIndenter = require('./indent').makeIndenter;
-var indent = require('./indent').indent;
-
-var _ = require('underscore')._;
+var ComposableSqlWhereClause = require('./ComposableSqlWhereClause');
 
 
 module.exports = ComposableSqlQuery;
@@ -43,13 +35,14 @@ ComposableSqlQuery.prototype.compile = function () {
 
 	} else {
 
-		var whereClause = new ComposableSqlWhereClause(this.definition.where);
-		var fromClause  = new ComposableSqlFromClause (this.definition.from );
+		var selectClause = new ComposableSqlSelectClause(this.definition.select);
+		var   fromClause = new ComposableSqlFromClause  (this.definition.from  );
+		var  whereClause = new ComposableSqlWhereClause (this.definition.where );
 
 		sql = [
-			'SELECT ' + "\n" + this.selectExpressionList(1),
-			fromClause .compile(0),
-			whereClause.compile(0)
+			selectClause.compile(0),
+			  fromClause.compile(0),
+			 whereClause.compile(0)
 		].join("\n") + ';';
 	}
 
@@ -57,43 +50,4 @@ ComposableSqlQuery.prototype.compile = function () {
 		text: sql,
 		parameters: [1, 2, 3]
 	}
-};
-
-
-ComposableSqlQuery.prototype.selectExpressionList = function (indentationLevel) {
-
-	return this.definition.select == '*'
-		? ['*']
-		: this.definition.select.map(function (selected) {
-
-			var tableName;
-			var columnName;
-
-			var column = ComposableSqlColumn.cast(selected);
-			if (column) {
-
-				tableName  = column.table && column.table.name;
-				columnName = column.name;
-
-			} else {
-
-				var table = ComposableSqlTable.cast(selected);
-				if (table) {
-
-					tableName  = table.name;
-				}
-			}
-
-			return (
-				tableName
-					? quoteIdentifier(tableName)+'.'
-					: ''
-			) + (
-				columnName
-					? quoteIdentifier(columnName)
-					: '*'
-			);
-		})
-			.map(makeIndenter(indentationLevel))
-			.join("\n");
 };

@@ -32,7 +32,7 @@ function ComposableSqlWhereClause (expression) {
 	if (!this.expression) {
 
 		var error = new Error('Bad expression to WhereClause.');;
-		error.badExpression = error;
+		error.badExpression = expression;
 		throw error;
 	}
 }

@@ -6,7 +6,7 @@ var ComposableSqlColumn = require('./ComposableSqlColumn');
 var ComposableSqlTable = require('./ComposableSqlTable');
 var ComposableSqlJoin = require('./ComposableSqlJoin');
 var ComposableSqlExpression = require('./ComposableSqlExpression'); require('./ComposableSqlExpression.cast');
-var ComposableSqlAnd = require('./ComposableSqlAnd');
+var ComposableSqlWhereClause = require('./ComposableSqlWhereClause');
 var quoteIdentifier = require('./quote').quoteIdentifier;
 var makeIndenter = require('./indent').makeIndenter;
 var indent = require('./indent').indent;
@@ -42,10 +42,12 @@ ComposableSqlQuery.prototype.compile = function () {
 
 	} else {
 
+		var whereClause = new ComposableSqlWhereClause(this.definition.where);
+
 		sql = [
 			'SELECT ' + "\n" + this.selectExpressionList(1),
 			'FROM ' + "\n" + this.fromTables(1),
-			'WHERE ' + "\n" + indent(1, this.whereExpression(1))
+			whereClause.compile(0)
 		].join("\n") + ';';
 	}
 
@@ -117,18 +119,4 @@ ComposableSqlQuery.prototype.fromTables = function (indentationLevel) {
 		}))
 		.map(makeIndenter(indentationLevel))
 		.join("\n");
-};
-
-
-ComposableSqlQuery.prototype.whereExpression = function (indentationLevel) {
-
-	var conditions = this.definition.where;
-
-	// Optionally accept an array to be AND:ed instead of a single expression.
-	if (_.isArray(conditions)) {
-
-		conditions = new ComposableSqlAnd(conditions);
-	}
-
-	return conditions.compile(indentationLevel);
 };

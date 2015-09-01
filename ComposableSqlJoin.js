@@ -27,7 +27,7 @@ function ComposableSqlJoin (definition) {
 		throw new Error('Invalid table for join definition.');
 	}
 
-	this.onExpression = definition.condition || {compile:function(){return'fake';}};
+	this.onExpression = definition.condition;
 	this.type = (definition.type || 'INNER').toUpperCase();
 }
 
@@ -46,4 +46,13 @@ ComposableSqlJoin.cast = function (joinish) {
 			table: table
 		});
 	}
+};
+
+
+ComposableSqlJoin.prototype.compile = function (indentationLevel) {
+
+	return (
+		this.type + ' JOIN ' + this.table.compile(indentationLevel + 1) +
+		' ON ' + this.onExpression.compile(indentationLevel + 1)
+	);
 };

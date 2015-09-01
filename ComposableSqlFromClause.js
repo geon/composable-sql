@@ -27,7 +27,21 @@ function ComposableSqlFromClause (tables) {
 	}
 
 	this.baseTable = ComposableSqlTable.cast(tables[0]);
-	this.joins     = tables.slice(1).map(ComposableSqlJoin.cast);
+	if (!this.baseTable) {
+
+		throw new Error('FromClause needs a base table.');
+	}
+
+	this.joins = tables.slice(1).map(ComposableSqlJoin.cast);
+
+	// Auto-join if no foreign key is explicitly set.
+	this.joins.forEach(function (join) {
+
+		if (!join.onExpression) {
+
+			join.onExpression = {compile:function(){return'fake';}};
+		}
+	});
 }
 
 
@@ -35,12 +49,12 @@ ComposableSqlFromClause.prototype.compile = function (indentationLevel) {
 
 	return (
 		'FROM' + "\n" +
+		indent(indentationLevel + 1, this.baseTable.compile()) + "\n" +
 		this.joins
 			.map(function (join) {
 
 				return indent(indentationLevel + 1,
-					join.type + ' JOIN ' + quoteIdentifier(join.table.name) +
-					' ON ' + join.onExpression.compile(indentationLevel + 1)
+					join.compile(indentationLevel + 1)
 				);
 			})
 			.join("\n")

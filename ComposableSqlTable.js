@@ -3,6 +3,7 @@
 
 
 var ComposableSqlColumn = require('./ComposableSqlColumn');
+var quoteIdentifier = require('./quote').quoteIdentifier;
 
 
 module.exports = ComposableSqlTable;
@@ -65,7 +66,7 @@ ComposableSqlTable.findTableByColumns = function (columns) {
 
 	var index = this._columnCollections.indexOf(columns);
 	return this._tablesMatchingColumnCollections[index];
-}
+};
 
 
 ComposableSqlTable.cast = function (tableish) {
@@ -85,4 +86,10 @@ ComposableSqlTable.cast = function (tableish) {
 
 	// 	return new ComposableSqlTable({name: columnish});
 	// }
-}
+};
+
+
+ComposableSqlTable.prototype.compile = function () {
+
+	return quoteIdentifier(this.name);
+};

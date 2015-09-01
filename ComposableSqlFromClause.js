@@ -4,6 +4,7 @@
 
 var ComposableSqlTable = require('./ComposableSqlTable');
 var ComposableSqlJoin = require('./ComposableSqlJoin');
+var ComposableSqlEq = require('./ComposableSqlEq');
 var indent = require('./indent').indent;
 var quoteIdentifier = require('./quote').quoteIdentifier;
 
@@ -34,14 +35,79 @@ function ComposableSqlFromClause (tables) {
 
 	this.joins = tables.slice(1).map(ComposableSqlJoin.cast);
 
+
 	// Auto-join if no foreign key is explicitly set.
-	this.joins.forEach(function (join) {
+	this.joins.forEach(function (join, index, joins) {
 
 		if (!join.onExpression) {
 
-			join.onExpression = {compile:function(){return'fake';}};
+			var earlierTables = joins
+				.slice(0, index)
+				.map(function (join) {
+
+					return join.table;
+				})
+				.reverse();				
+			earlierTables.push(this.baseTable);
+
+
+			var earlierColumnsWithForeignKey = _.flatten(earlierTables
+				.map(function (table) {
+
+					return table.columns && _.values(table.columns)
+						.filter(function (column) {
+
+							return !!column.foreignKey;
+						});
+				})
+				.filter(function (foreignKeys) {
+
+					return !!foreignKeys.length
+				})
+			);
+
+
+			for (var i = 0; i < earlierColumnsWithForeignKey.length; i++) {
+				var column = earlierColumnsWithForeignKey[i];
+
+				if (column.foreignKey.table == join.table) {
+
+					join.onExpression = new ComposableSqlEq(
+						join.table.columns[column.foreignKey.name],
+						column
+					);
+					return;
+				}
+			}
+
+
+			var localColumnsWithForeignKey = _.values(join.table.columns)
+				.filter(function (column) {
+
+					return !!column.foreignKey;
+				});
+
+			for (var i = 0; i < localColumnsWithForeignKey.length; i++) {
+				var column = localColumnsWithForeignKey[i];
+
+				for (var i = 0; i < earlierTables.length; i++) {
+					var earlierTable = earlierTables[i];
+
+					if (column.foreignKey.table == earlierTable) {
+
+						join.onExpression = new ComposableSqlEq(
+							column,
+							earlierTable.columns[column.foreignKey.name]
+						);
+						return;
+					}
+				}
+			}
+
+
+			throw new Error('No matching foreign key.');
 		}
-	});
+	}.bind(this));
 }
 
 

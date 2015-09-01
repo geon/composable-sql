@@ -57,12 +57,13 @@ ComposableSqlConstant.prototype.compile = function (indentationLevel) {
 
 	if (_.isArray(this.value)) {
 
-		return '('+
+		return (
+			'('+
 			this.value
 				.map(quoteConstant)
-				.map(makeIndenter(indentationLevel + 1))
-				.join(",\n") +
-			indent(indentationLevel, ')');
+				.join(", ") +
+			')'
+		);
 	}
 
 	return quoteConstant(this.value);

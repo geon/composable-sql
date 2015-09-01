@@ -41,7 +41,7 @@ function ComposableSqlWhereClause (expression) {
 ComposableSqlWhereClause.prototype.compile = function (indentationLevel) {
 
 	return (
-		'WHERE ' + "\n" +
+		'WHERE' + "\n" +
 		indent(indentationLevel + 1, this.expression.compile(indentationLevel + 1))
 	);
 };

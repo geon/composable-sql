@@ -15,11 +15,6 @@ function ComposableSqlJoin (definition) {
 		throw new Error('Missing table for join definition.');
 	}
 
-	// if (!definition.condition) {
-
-	// 	throw new Error('Missing condition for join definition.');
-	// }
-
 	this.table = ComposableSqlTable.cast(definition.table);
 
 	if (!this.table) {

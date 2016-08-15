@@ -40,6 +40,14 @@ var query = sql.query({
 			sql.date(posts.created),
 			sql.date(sql.now())
 		),
+		sql.eq(
+			users.name,
+			[
+				'geon',
+				'neon',
+				'peon'
+			]
+		),
 		// sql.or takes an array. A single expression doesn't make sense.
 		sql.or([
 			sql.not(posts.isPublished),

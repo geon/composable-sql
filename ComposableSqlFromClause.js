@@ -90,8 +90,8 @@ function ComposableSqlFromClause (tables) {
 			for (var i = 0; i < localColumnsWithForeignKey.length; i++) {
 				var column = localColumnsWithForeignKey[i];
 
-				for (var i = 0; i < earlierTables.length; i++) {
-					var earlierTable = earlierTables[i];
+				for (var j = 0; j < earlierTables.length; j++) {
+					var earlierTable = earlierTables[j];
 
 					if (column.foreignKey.table == earlierTable) {
 

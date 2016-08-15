@@ -44,6 +44,7 @@ function ComposableSqlFromClause (tables) {
 			return;
 		}
 
+		// A join can refer to any of the earlier tables.
 		var earlierTables = joins
 			.slice(0, index)
 			.map(function (join) {
@@ -53,7 +54,8 @@ function ComposableSqlFromClause (tables) {
 			.reverse();
 		earlierTables.push(this.baseTable);
 
-
+		// Joins can be automatically detected when earlier tables have
+		// columns with foreign keys to the table in this join.
 		var earlierColumnsWithForeignKey = _.flatten(earlierTables
 			.map(function (table) {
 
@@ -63,13 +65,16 @@ function ComposableSqlFromClause (tables) {
 						return !!column.foreignKey;
 					});
 			})
+			// TODO: This seems redundant. Won't flatten just concatenate the empty arrays anyway?
 			.filter(function (foreignKeys) {
 
 				return !!foreignKeys.length
 			})
 		);
 
-
+		// If there is one, join to the first column that
+		// has a foreign key to the table in this join.
+		// TODO: Rewrite with .find().
 		for (var i = 0; i < earlierColumnsWithForeignKey.length; i++) {
 			var column = earlierColumnsWithForeignKey[i];
 
@@ -83,13 +88,13 @@ function ComposableSqlFromClause (tables) {
 			}
 		}
 
-
+		// Check if any of the columns in the table of this
+		// join has a foreign key to a previous table.
 		var localColumnsWithForeignKey = _.values(join.table.columns)
 			.filter(function (column) {
 
 				return !!column.foreignKey;
 			});
-
 		for (var i = 0; i < localColumnsWithForeignKey.length; i++) {
 			var column = localColumnsWithForeignKey[i];
 

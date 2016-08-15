@@ -74,18 +74,17 @@ function ComposableSqlFromClause (tables) {
 
 		// If there is one, join to the first column that
 		// has a foreign key to the table in this join.
-		// TODO: Rewrite with .find().
-		for (var i = 0; i < earlierColumnsWithForeignKey.length; i++) {
-			var column = earlierColumnsWithForeignKey[i];
+		var column = earlierColumnsWithForeignKey
+			.find(function (column) {
+				return column.foreignKey.table == join.table;
+			});
+		if (column) {
 
-			if (column.foreignKey.table == join.table) {
-
-				join.onExpression = new ComposableSqlEq(
-					join.table.columns[column.foreignKey.name],
-					column
-				);
-				return;
-			}
+			join.onExpression = new ComposableSqlEq(
+				join.table.columns[column.foreignKey.name],
+				column
+			);
+			return;
 		}
 
 		// Check if any of the columns in the table of this

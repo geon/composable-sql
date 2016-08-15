@@ -39,74 +39,76 @@ function ComposableSqlFromClause (tables) {
 	// Auto-join if no foreign key is explicitly set.
 	this.joins.forEach(function (join, index, joins) {
 
-		if (!join.onExpression) {
+		// Respect explicit joins.
+		if (join.onExpression) {
+			return;
+		}
 
-			var earlierTables = joins
-				.slice(0, index)
-				.map(function (join) {
+		var earlierTables = joins
+			.slice(0, index)
+			.map(function (join) {
 
-					return join.table;
-				})
-				.reverse();				
-			earlierTables.push(this.baseTable);
-
-
-			var earlierColumnsWithForeignKey = _.flatten(earlierTables
-				.map(function (table) {
-
-					return table.columns && _.values(table.columns)
-						.filter(function (column) {
-
-							return !!column.foreignKey;
-						});
-				})
-				.filter(function (foreignKeys) {
-
-					return !!foreignKeys.length
-				})
-			);
+				return join.table;
+			})
+			.reverse();
+		earlierTables.push(this.baseTable);
 
 
-			for (var i = 0; i < earlierColumnsWithForeignKey.length; i++) {
-				var column = earlierColumnsWithForeignKey[i];
+		var earlierColumnsWithForeignKey = _.flatten(earlierTables
+			.map(function (table) {
 
-				if (column.foreignKey.table == join.table) {
+				return table.columns && _.values(table.columns)
+					.filter(function (column) {
+
+						return !!column.foreignKey;
+					});
+			})
+			.filter(function (foreignKeys) {
+
+				return !!foreignKeys.length
+			})
+		);
+
+
+		for (var i = 0; i < earlierColumnsWithForeignKey.length; i++) {
+			var column = earlierColumnsWithForeignKey[i];
+
+			if (column.foreignKey.table == join.table) {
+
+				join.onExpression = new ComposableSqlEq(
+					join.table.columns[column.foreignKey.name],
+					column
+				);
+				return;
+			}
+		}
+
+
+		var localColumnsWithForeignKey = _.values(join.table.columns)
+			.filter(function (column) {
+
+				return !!column.foreignKey;
+			});
+
+		for (var i = 0; i < localColumnsWithForeignKey.length; i++) {
+			var column = localColumnsWithForeignKey[i];
+
+			for (var j = 0; j < earlierTables.length; j++) {
+				var earlierTable = earlierTables[j];
+
+				if (column.foreignKey.table == earlierTable) {
 
 					join.onExpression = new ComposableSqlEq(
-						join.table.columns[column.foreignKey.name],
-						column
+						column,
+						earlierTable.columns[column.foreignKey.name]
 					);
 					return;
 				}
 			}
-
-
-			var localColumnsWithForeignKey = _.values(join.table.columns)
-				.filter(function (column) {
-
-					return !!column.foreignKey;
-				});
-
-			for (var i = 0; i < localColumnsWithForeignKey.length; i++) {
-				var column = localColumnsWithForeignKey[i];
-
-				for (var j = 0; j < earlierTables.length; j++) {
-					var earlierTable = earlierTables[j];
-
-					if (column.foreignKey.table == earlierTable) {
-
-						join.onExpression = new ComposableSqlEq(
-							column,
-							earlierTable.columns[column.foreignKey.name]
-						);
-						return;
-					}
-				}
-			}
-
-
-			throw new Error('No matching foreign key.');
 		}
+
+
+		throw new Error('No matching foreign key.');
 	}.bind(this));
 }
 

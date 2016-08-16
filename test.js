@@ -6,6 +6,7 @@ var vows = require('vows');
 var sql = require('./index');
 var ComposableSqlEq = require('./ComposableSqlEq');
 var ComposableSqlConstant = require('./ComposableSqlConstant');
+var ComposableSqlFromClause = require('./ComposableSqlFromClause');
 
 
 var users = sql.table('users', [
@@ -102,6 +103,119 @@ vows.describe('composable-sql')
 
 			'should compile to "list"': function (topic) {
 				assert(topic == '(123, 42, 1337)');
+			}
+		}
+	})
+	.addBatch({
+		'ComposableSqlFromClause single table': {
+			topic: function () {
+
+				return new ComposableSqlFromClause(users);
+			},
+
+			'should have a base table': function (topic) {
+				assert(topic.baseTable.columns == users);
+			},
+
+			'should have no joins': function (topic) {
+				assert(!topic.joins.length);
+			}
+		},
+
+		'ComposableSqlFromClause explicit join': {
+			topic: function () {
+
+				return new ComposableSqlFromClause([
+					users,
+					sql.join(
+						comments,
+						sql.eq(
+							comments.userId,
+							users.id
+						),
+						'left'
+					)
+				]);
+			},
+
+			'should have a base table': function (topic) {
+				assert(topic.baseTable.columns == users);
+			},
+
+			'should be joined to the right table': function (topic) {
+				assert(topic.joins[0].table.columns == comments);
+			},
+
+			'should be joined the right way': function (topic) {
+				assert(topic.joins[0].type == 'LEFT');
+			},
+
+			'should be joined on the right condition': function (topic) {
+				assert(
+					topic.joins[0].onExpression instanceof ComposableSqlEq &&
+					topic.joins[0].onExpression.a == comments.userId &&
+					topic.joins[0].onExpression.b == users.id
+				);
+			}
+		},
+
+		'ComposableSqlFromClause automatic join to previous tables': {
+			topic: function () {
+
+				return new ComposableSqlFromClause([
+					users,
+					comments
+				]);
+			},
+
+			'should have a base table': function (topic) {
+				assert(topic.baseTable.columns == users);
+			},
+
+			'should be joined to the right table': function (topic) {
+				assert(topic.joins[0].table.columns == comments);
+			},
+
+			'should be joined the right way': function (topic) {
+				assert(topic.joins[0].type == 'INNER');
+			},
+
+			'should be joined on the right condition': function (topic) {
+				assert(
+					topic.joins[0].onExpression instanceof ComposableSqlEq &&
+					topic.joins[0].onExpression.a == comments.userId &&
+					topic.joins[0].onExpression.b == users.id
+				);
+			}
+		},
+
+		'ComposableSqlFromClause automatic join from previous tables': {
+			topic: function () {
+
+				return new ComposableSqlFromClause([
+					comments,
+					users
+				]);
+			},
+
+			'should have a base table': function (topic) {
+				assert(topic.baseTable.columns == comments);
+			},
+
+			'should be joined to the right table': function (topic) {
+				assert(topic.joins[0].table.columns == users);
+			},
+
+			'should be joined the right way': function (topic) {
+				assert(topic.joins[0].type == 'INNER');
+			},
+
+			'should be joined on the right condition': function (topic) {
+				assert(
+					topic.joins[0].onExpression instanceof ComposableSqlEq &&
+					topic.joins[0].onExpression.a == users.id &&
+					topic.joins[0].onExpression.b == comments.userId
+				);
 			}
 		}
 	})

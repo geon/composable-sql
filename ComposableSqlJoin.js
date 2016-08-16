@@ -23,6 +23,7 @@ function ComposableSqlJoin (definition) {
 	}
 
 	this.onExpression = definition.condition;
+	// INNER is the default join type in SQL.
 	this.type = (definition.type || 'INNER').toUpperCase();
 }
 

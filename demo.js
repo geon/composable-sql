@@ -77,3 +77,16 @@ var result = query.compile();
 
 console.log(result.text);
 console.log(result.parameters);
+
+
+
+console.log(sql.query({
+	insert: {
+		table: users,
+		rows: [
+			{name: 'geon'},
+			{name: 'neon'},
+			{name: 'leon'}
+		]
+	}
+}).compile().text)

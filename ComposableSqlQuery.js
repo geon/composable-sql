@@ -2,6 +2,7 @@
 'use strict';
 
 
+var ComposableSqlInsertClause = require('./ComposableSqlInsertClause');
 var ComposableSqlSelectClause = require('./ComposableSqlSelectClause');
 var ComposableSqlFromClause = require('./ComposableSqlFromClause');
 var ComposableSqlWhereClause = require('./ComposableSqlWhereClause');
@@ -17,6 +18,7 @@ function ComposableSqlQuery (query) {
 		throw new Error('Query needs 1 argument.');
 	}
 
+	this.insert = query.insert && new ComposableSqlInsertClause(query.insert);
 	this.select = query.select && new ComposableSqlSelectClause(query.select);
 	this.from   = query.from   && new ComposableSqlFromClause  (query.from  );
 	this.where  = query.where  && new ComposableSqlWhereClause (query.where );
@@ -30,6 +32,10 @@ ComposableSqlQuery.prototype.compile = function () {
 	if (this.delete) {
 
 		throw new Error('Not implemented.');
+
+	} else if (this.insert) {
+
+		sql = this.insert.compile(0) + ';';
 
 	} else if (this.update) {
 
